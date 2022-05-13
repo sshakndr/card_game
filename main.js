@@ -1,6 +1,14 @@
+//TODO: более адаптивные расстояния между картами в ширину и адаптивный текст
+//TODO: анимация перемешивания в центр при начале игры
+//TODO: почему звуки в первой игре не успевают подгружаться и не проигрываются...
+//автор: Кондратьев Александр
+//вроде для pixi.js нужен сервер, так что через index.html из папки не запускает
+//но из вебшторма на локальном сервере работает
+
 //variables
 let cats = [[],[],[],[]];
 let cards = [[],[],[],[]];
+let opened = [[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false],];
 let usedSprites = [0,0,0,0,0,0,0,0,];
 let openedCard = null;
 let wait = false;
@@ -40,59 +48,71 @@ function initCats() {
 function closeCards() {
     for(let i=0;i<4;i++) {
         for (let j = 0; j < 4; j++) {
-            cards[i][j].texture = cardBackTexture;
+            cards[i][j].textures = cardTexturesBack[cats[i][j]];
+            cards[i][j].play();
         }
     }
 }
 function openCards() {
     for(let i=0;i<4;i++) {
         for (let j = 0; j < 4; j++) {
-            cards[i][j].texture = catTexture[cats[i][j]];
+            cards[i][j].textures = cardTextures[cats[i][j]];
+            cards[i][j].play();
         }
     }
 }
 function openCard(i,j) {
-    wait = true;
-    if(openedCard==null){
-        cardFlipSound();
-        cards[i][j].texture = catTexture[cats[i][j]];
-        openedCard = [i,j];
-        wait = false;
-        console.log("null");
-    }
-    else{
-        cards[i][j].texture = catTexture[cats[i][j]];
-        if(cats[i][j]===cats[openedCard[0]][openedCard[1]] && !(i===openedCard[0] && j===openedCard[1])){
+    if (opened[i][j]===false){
+        wait = true;
+        if(openedCard==null){
             cardFlipSound();
-            openCounter++;
-            if(openCounter!==8)  setTimeout("correctSound()",500);
-            openedCard = null;
+            cards[i][j].textures = cardTextures[cats[i][j]];
+            cards[i][j].play();
+            openedCard = [i,j];
             wait = false;
-            console.log("==");
+            console.log("null");
         }
         else{
             if(!(i===openedCard[0] && j===openedCard[1])){
+                cards[i][j].textures = cardTextures[cats[i][j]];
+                cards[i][j].play();
+            }
+            if(cats[i][j]===cats[openedCard[0]][openedCard[1]] && !(i===openedCard[0] && j===openedCard[1])){
                 cardFlipSound();
-                console.log("no");
-                setTimeout("nopeSound();",500);
-                setTimeout(function () {
-                    cardFlipSound();
-                    cards[i][j].texture = cardBackTexture;
-                    cards[openedCard[0]][openedCard[1]].texture = cardBackTexture;
-                    openedCard = null;
-                    wait = false;
-                },1000);
+                opened[i][j]=true;
+                opened[openedCard[0]][openedCard[1]]=true;
+                openCounter++;
+                if(openCounter!==8)  setTimeout("correctSound()",500);
+                openedCard = null;
+                wait = false;
+                console.log("==");
             }
             else{
-                console.log("same");
-                wait = false;
+                if(!(i===openedCard[0] && j===openedCard[1])){
+                    cardFlipSound();
+                    console.log("no");
+                    setTimeout("nopeSound();",500);
+                    setTimeout(function () {
+                        cardFlipSound();
+                        cards[i][j].textures = cardTexturesBack[cats[i][j]];
+                        cards[i][j].play();
+                        cards[openedCard[0]][openedCard[1]].textures = cardTexturesBack[cats[openedCard[0]][openedCard[1]]];
+                        cards[openedCard[0]][openedCard[1]].play();
+                        openedCard = null;
+                        wait = false;
+                    },1000);
+                }
+                else{
+                    console.log("same");
+                    wait = false;
+                }
             }
         }
-    }
-    if(openCounter===8){
-        setTimeout("winSound();",500);
-        clearInterval(timer.id);
-        setTimeout("newGame()",5000);
+        if(openCounter===8){
+            setTimeout("winSound();",500);
+            clearInterval(timer.id);
+            setTimeout("newGame()",5000);
+        }
     }
 }
 function resized(){
@@ -112,6 +132,7 @@ function resized(){
 function newGame() {
     //cleaning
     usedSprites = [0,0,0,0,0,0,0,0,];
+    opened = [[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false],];
     cats = [[],[],[],[]];
     openCounter = 0;
     openedCard = null;
@@ -120,9 +141,9 @@ function newGame() {
     timer.sec = 0;
     timer.id = null;
     gameTimer.text = '00:00';
-    closeCards();
     //initialising
     initCats();
+    closeCards();
     //playing
     wait = true;
     cardsMixSound();
@@ -174,10 +195,23 @@ function winSound() {
 }
 
 //textures
-const cardBackTexture = PIXI.Texture.from('./src/images/cardback.png');
-let catTexture = [];
-for(let i=0;i<8;i++){
-    catTexture.push(PIXI.Texture.from('./src/images/cat' + i + '.png'));
+let cardTextures = [[],[],[],[],[],[],[],[]];
+for (let i=0;i<8;i++){
+    for (let j=0;j<5;j++){
+        cardTextures[i].push(PIXI.Texture.from('./src/images/cardback_'+j+'.png'));
+    }
+    for(let j=3;j>-1;j--){
+        cardTextures[i].push(PIXI.Texture.from('./src/images/cat'+i+'_'+j+'.png'));
+    }
+}
+let cardTexturesBack = [[],[],[],[],[],[],[],[]];
+for (let i=0;i<8;i++){
+    for(let j=0;j<4;j++){
+        cardTexturesBack[i].push(PIXI.Texture.from('./src/images/cat'+i+'_'+j+'.png'));
+    }
+    for(let j=4;j>-1;j--){
+        cardTexturesBack[i].push(PIXI.Texture.from('./src/images/cardback_'+j+'.png'));
+    }
 }
 
 //canvas filling
@@ -191,7 +225,8 @@ app.renderer.view.style.position = 'absolute';
 document.body.appendChild(app.view);
 for(let i=0;i<4;i++){
     for(let j=0;j<4;j++){
-        cards[i][j] = new PIXI.Sprite(cardBackTexture);
+        cards[i][j] = new PIXI.AnimatedSprite(cardTexturesBack[0]);
+        cards[i][j].loop = false;
         cards[i][j].interactive = true;
         cards[i][j].buttonMode = true;
         cards[i][j].scale.set(window.innerHeight / 4586);
@@ -204,6 +239,7 @@ for(let i=0;i<4;i++){
             if(wait===false)openCard(i,j);
         })
         app.stage.addChild(cards[i][j]);
+        console.log(i+'.'+j);
     }
 }
 const style = new PIXI.TextStyle({
