@@ -57,21 +57,30 @@ function openCard(i,j) {
         cards[i][j].texture = catTexture[cats[i][j]];
         openedCard = [i,j];
         wait = false;
+        console.log("null");
     }
     else{
         cards[i][j].texture = catTexture[cats[i][j]];
-        if(cats[i][j]===cats[openedCard[0]][openedCard[1]]){
+        if(cats[i][j]===cats[openedCard[0]][openedCard[1]] && !(i===openedCard[0] && j===openedCard[1])){
             openCounter++;
             openedCard = null;
             wait = false;
+            console.log("==");
         }
         else{
-            setTimeout(function () {
-                cards[i][j].texture = cardBackTexture;
-                cards[openedCard[0]][openedCard[1]].texture = cardBackTexture;
-                openedCard = null;
+            if(!(i===openedCard[0] && j===openedCard[1])){
+                console.log("no");
+                setTimeout(function () {
+                    cards[i][j].texture = cardBackTexture;
+                    cards[openedCard[0]][openedCard[1]].texture = cardBackTexture;
+                    openedCard = null;
+                    wait = false;
+                },1000);
+            }
+            else{
+                console.log("same");
                 wait = false;
-            },1000);
+            }
         }
     }
     if(openCounter===8){
