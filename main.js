@@ -54,6 +54,7 @@ function openCards() {
 function openCard(i,j) {
     wait = true;
     if(openedCard==null){
+        cardFlipSound();
         cards[i][j].texture = catTexture[cats[i][j]];
         openedCard = [i,j];
         wait = false;
@@ -62,15 +63,20 @@ function openCard(i,j) {
     else{
         cards[i][j].texture = catTexture[cats[i][j]];
         if(cats[i][j]===cats[openedCard[0]][openedCard[1]] && !(i===openedCard[0] && j===openedCard[1])){
+            cardFlipSound();
             openCounter++;
+            if(openCounter!==8)  setTimeout("correctSound()",500);
             openedCard = null;
             wait = false;
             console.log("==");
         }
         else{
             if(!(i===openedCard[0] && j===openedCard[1])){
+                cardFlipSound();
                 console.log("no");
+                setTimeout("nopeSound();",500);
                 setTimeout(function () {
+                    cardFlipSound();
                     cards[i][j].texture = cardBackTexture;
                     cards[openedCard[0]][openedCard[1]].texture = cardBackTexture;
                     openedCard = null;
@@ -84,6 +90,7 @@ function openCard(i,j) {
         }
     }
     if(openCounter===8){
+        setTimeout("winSound();",500);
         clearInterval(timer.id);
         setTimeout("newGame()",5000);
     }
@@ -118,9 +125,12 @@ function newGame() {
     initCats();
     //playing
     wait = true;
+    cardsMixSound();
     setTimeout(function () {
+        cardFlipSound();
         openCards();
         setTimeout(function () {
+            cardFlipSound();
             closeCards();
             wait = false;
             timer.id = setInterval(function () {
@@ -135,6 +145,33 @@ function newGame() {
     },1000);
 }
 window.onresize = resized;
+
+//sounds
+function nopeSound() {
+    let audio = new Audio();
+    audio.src = './src/sounds/nope.mp3';
+    audio.autoplay = true;
+}
+function cardFlipSound() {
+    let audio = new Audio();
+    audio.src = './src/sounds/cardflip.mp3';
+    audio.autoplay = true;
+}
+function cardsMixSound() {
+    let audio = new Audio();
+    audio.src = './src/sounds/cardsmix.mp3';
+    audio.autoplay = true;
+}
+function correctSound() {
+    let audio = new Audio();
+    audio.src = './src/sounds/correct.mp3';
+    audio.autoplay = true;
+}
+function winSound() {
+    let audio = new Audio();
+    audio.src = './src/sounds/win.mp3';
+    audio.autoplay = true;
+}
 
 //textures
 const cardBackTexture = PIXI.Texture.from('./src/images/cardback.png');
