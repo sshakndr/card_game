@@ -1,9 +1,6 @@
-//TODO: более адаптивные расстояния между картами в ширину и адаптивный текст
 //TODO: анимация перемешивания в центр при начале игры
 //TODO: почему звуки в первой игре не успевают подгружаться и не проигрываются...
 //автор: Кондратьев Александр
-//вроде для pixi.js нужен сервер, так что через index.html из папки не запускает
-//но из вебшторма на локальном сервере работает
 
 //variables
 let cats = [[],[],[],[]];
@@ -122,11 +119,33 @@ function resized(){
     for(let i=0;i<4;i++) {
         for (let j = 0; j < 4; j++) {
             cards[i][j].scale.set(window.innerHeight / 4586);
-            cards[i][j].position.set(
-                window.innerWidth/2 + (window.innerWidth / 25 * getPos(i)),
-                window.innerHeight/2 + (window.innerHeight / 9 * getPos(j)),
-            );
+            if(window.innerHeight > 1.5 * window.innerWidth){
+                cards[i][j].scale.set(window.innerWidth / 3305);
+                cards[i][j].position.set(
+                    window.innerWidth/2 + ((window.innerHeight/window.innerWidth) * window.innerWidth / 18 * getPos(i)),
+                    window.innerHeight/2 + (window.innerHeight / 12 * getPos(j)),
+                );
+            }else{
+                cards[i][j].scale.set(window.innerHeight / 4586);
+                cards[i][j].position.set(
+                    window.innerWidth/2 + ((window.innerHeight/window.innerWidth) * window.innerWidth / 12 * getPos(i)),
+                    window.innerHeight/2 + (window.innerHeight / 9 * getPos(j)),
+                );
+            }
         }
+    }
+    if(window.innerHeight > window.innerWidth){
+        gameText.anchor.y = 0;
+        gameText.anchor.x = 1;
+        style.fontSize = window.innerHeight / 40;
+        gameText.position.set(window.innerWidth/2,window.innerHeight > 1.5 * window.innerWidth?window.innerHeight/8:0);
+        gameTimer.position.set(window.innerWidth/2,window.innerHeight > 1.5 * window.innerWidth?window.innerHeight/8:0);
+    }else{
+        gameText.anchor.y = 1;
+        gameText.anchor.x = 0;
+        style.fontSize = window.innerWidth / 40;
+        gameText.position.set(window.innerWidth > 1.5 * window.innerHeight?window.innerWidth/8:0,window.innerHeight/2);
+        gameTimer.position.set(window.innerWidth > 1.5 * window.innerHeight?window.innerWidth/8:0,window.innerHeight/2);
     }
 }
 function newGame() {
@@ -229,12 +248,20 @@ for(let i=0;i<4;i++){
         cards[i][j].loop = false;
         cards[i][j].interactive = true;
         cards[i][j].buttonMode = true;
-        cards[i][j].scale.set(window.innerHeight / 4586);
         cards[i][j].anchor.set(0.5);
-        cards[i][j].position.set(
-            window.innerWidth/2 + (window.innerWidth / 25 * getPos(i)),
-            window.innerHeight/2 + (window.innerHeight / 9 * getPos(j)),
-        );
+        if(window.innerHeight > 1.5 * window.innerWidth){
+            cards[i][j].scale.set(window.innerWidth / 3305);
+            cards[i][j].position.set(
+                window.innerWidth/2 + ((window.innerHeight/window.innerWidth) * window.innerWidth / 18 * getPos(i)),
+                window.innerHeight/2 + (window.innerHeight / 12 * getPos(j)),
+            );
+        }else{
+            cards[i][j].scale.set(window.innerHeight / 4586);
+            cards[i][j].position.set(
+                window.innerWidth/2 + ((window.innerHeight/window.innerWidth) * window.innerWidth / 12 * getPos(i)),
+                window.innerHeight/2 + (window.innerHeight / 9 * getPos(j)),
+            );
+        }
         cards[i][j].on('pointerdown',function () {
             if(wait===false)openCard(i,j);
         })
@@ -245,13 +272,23 @@ for(let i=0;i<4;i++){
 const style = new PIXI.TextStyle({
     fontSize: 35,
 });
-const gameText = new PIXI.Text('Время игры',style);
+const gameText = new PIXI.Text('Время игры:  ',style);
 app.stage.addChild(gameText);
-gameText.anchor.y = 1;
-gameText.position.set(window.innerWidth/8,window.innerHeight/2);
 const gameTimer = new PIXI.Text("00:00",style);
 app.stage.addChild(gameTimer);
-gameTimer.position.set(window.innerWidth/8,window.innerHeight/2);
+if(window.innerHeight > 0.5 * window.innerWidth){
+    gameText.anchor.y = 0;
+    gameText.anchor.x = 1;
+    style.fontSize = window.innerHeight / 40;
+    gameText.position.set(window.innerWidth/2,window.innerHeight > 1.5 * window.innerWidth?window.innerHeight/8:0);
+    gameTimer.position.set(window.innerWidth/2,window.innerHeight > 1.5 * window.innerWidth?window.innerHeight/8:0);
+}else{
+    gameText.anchor.y = 1;
+    gameText.anchor.x = 0;
+    style.fontSize = window.innerWidth / 40;
+    gameText.position.set(window.innerWidth > 1.5 * window.innerHeight?window.innerWidth/8:0,window.innerHeight/2);
+    gameTimer.position.set(window.innerWidth > 1.5 * window.innerHeight?window.innerWidth/8:0,window.innerHeight/2);
+}
 
 //playing
 newGame();
